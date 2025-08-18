@@ -80,30 +80,29 @@ app.post('/api/chat', async (req, res) => {
         res.json({ reply: text });
 
     } catch (error) {
-        // --- Tratamento de Erro Aprimorado ---
-        console.error(`\n!!! ERRO NO ENDPOINT /api/chat !!!`);
-        console.error(`Timestamp: ${new Date().toISOString()}`);
-        console.error(`Prompt Recebido: "${userPrompt}"`); // Loga o prompt que pode ter causado o erro
-
-        // Verifica se é um erro específico da API do Google para mais detalhes
-        if (error instanceof Error && error.message.includes('GoogleGenerativeAI')) { // Checagem mais genérica do nome/mensagem
-            console.error("Tipo de Erro: Google Generative AI");
-            // Tenta logar detalhes adicionais se disponíveis (pode variar com a versão da lib)
-            if (error.status) console.error("Status HTTP (se aplicável):", error.status);
-            if (error.statusText) console.error("Status Text (se aplicável):", error.statusText);
-            if (error.errorDetails) console.error("Detalhes do Erro da API:", error.errorDetails);
-        } else {
-            console.error("Tipo de Erro: Erro Geral do Servidor");
+    console.error(`[Sessão: ${sessionId}] ERRO GERAL na rota /chat:`, error.message || error);
+    
+    // <<< NOVO CÓDIGO INTELIGENTE AQUI >>>
+    // A biblioteca do Google anexa o status HTTP ao objeto de erro em `error.cause.status` ou `error.status`
+    const status = error.cause?.status || error.status; 
+    
+    if (status) {
+        if (status === 503) {
+            return res.status(503).json({ 
+                error: "Peço perdão. Meu espírito digital (a API do Google) encontra-se sobrecarregado no momento. Por favor, aguarde um instante e tente novamente."
+            });
         }
-
-        // Loga o objeto de erro completo, incluindo stack trace (essencial para depuração)
-        console.error("Erro Detalhado Completo:", error);
-        console.error("--- Fim do Log de Erro ---\n");
+        if (status === 429) {
+            return res.status(429).json({ 
+                error: "Muitos movimentos em pouco tempo. A disciplina exige uma pausa. Por favor, aguarde um momento."
+            });
+        }
+    }
         // --- Fim do Tratamento de Erro Aprimorado ---
 
         // Envia uma resposta genérica 500 para o cliente
         // IMPORTANTE: Não envie detalhes internos do erro para o cliente por segurança
-        res.status(500).json({ error: 'Ocorreu um erro interno no servidor ao processar sua solicitação.' });
+        res.status(500).json({ error: 'Uma perturbação inesperada ocorreu no caminho. Um erro interno impediu a comunicação.' });
     }
 });
 

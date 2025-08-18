@@ -21,7 +21,6 @@ const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!API_KEY) {
     console.error("🚨 ERRO FATAL: A variável de ambiente GEMINI_API_KEY não foi encontrada ou está vazia.");
-    // ... (mensagens de erro)
     process.exit(1);
 }
 
