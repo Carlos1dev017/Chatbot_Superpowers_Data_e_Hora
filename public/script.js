@@ -2,22 +2,25 @@ const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 
-// Variável para armazenar o histórico do lado do cliente (opcional, mas útil)
-// O histórico real será mantido no servidor se implementado lá
+// <<< CORREÇÃO 1: Defina a URL da API aqui, no topo do arquivo.
+const API_URL = 'https://chatbot-samuria.onrender.com/api/chat';
+
+// Histórico do cliente (opcional)
 let clientHistory = [];
-let currentSessionId = null; // Para manter o ID da sessão de chat no servidor
 
 // --- Funções Auxiliares ---
 function addMessage(message, sender) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', `${sender}-message`);
-    messageDiv.textContent = message;
+    messageDiv.innerText = message; // Usar innerText para interpretar quebras de linha (\n)
     chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll para a última mensagem
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function showTypingIndicator(show = true) {
-    removeTypingIndicator(); // Remove qualquer indicador existente
+    const existingIndicator = document.getElementById('typing');
+    if (existingIndicator) existingIndicator.remove();
+
     if (show) {
         const typingDiv = document.createElement('div');
         typingDiv.classList.add('message', 'bot-message', 'typing-indicator');
@@ -28,66 +31,57 @@ function showTypingIndicator(show = true) {
     }
 }
 
-function removeTypingIndicator() {
-    const typingDiv = document.getElementById('typing');
-    if (typingDiv) {
-        typingDiv.remove();
-    }
-}
-
 // --- Função Principal de Envio ---
 async function sendMessage() {
     const message = userInput.value.trim();
-    if (!message) return; // Não envia mensagens vazias
+    if (!message) return;
 
-    addMessage(message, 'user'); // Mostra a mensagem do usuário
-    clientHistory.push({ role: 'user', text: message }); // Adiciona ao histórico local
-    userInput.value = ''; // Limpa o input
-    showTypingIndicator(); // Mostra "Digitando..."
-
-    const apiUrl = 'https://chatbot-samuria.onrender.com';
+    addMessage(message, 'user');
+    clientHistory.push({ role: 'user', text: message });
+    userInput.value = '';
+    sendButton.disabled = true;
+    showTypingIndicator();
 
     try {
-        const response = await fetch('/chat', {
+        // <<< CORREÇÃO 2: Use a variável API_URL na chamada fetch.
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            // Envia a mensagem e o ID da sessão atual (se houver)
+            // O corpo (body) está correto, enviando "prompt"
             body: JSON.stringify({ prompt: message }),
         });
 
-        removeTypingIndicator(); // Remove "Digitando..."
+        showTypingIndicator(false);
 
         if (!response.ok) {
-            // Tenta pegar a mensagem de erro do servidor, se houver
-            const errorData = await response.json().catch(() => ({})); // Evita erro se a resposta não for JSON
-            console.error('Erro na resposta do servidor:', response.status, errorData);
-            addMessage(`Erro ${response.status}: ${errorData.error || 'Não foi possível obter a resposta do chatbot.'}`, 'bot');
-            return;
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Erro do Servidor: ${response.status}`);
         }
 
         const data = await response.json();
 
         if (data.reply) {
-            addMessage(data.reply, 'bot'); // Mostra a resposta do bot
-            clientHistory.push({ role: 'model', text: data.reply }); // Adiciona ao histórico local
-            currentSessionId = data.sessionId; // Atualiza o ID da sessão para a próxima requisição
+            addMessage(data.reply, 'bot');
+            clientHistory.push({ role: 'model', text: data.reply });
         } else {
              addMessage('Recebi uma resposta vazia do bot.', 'bot');
         }
 
     } catch (error) {
-        removeTypingIndicator();
+        showTypingIndicator(false);
         console.error('Erro ao enviar mensagem:', error);
-        addMessage('Ocorreu um erro de conexão. Tente novamente.', 'bot');
+        addMessage(`Ocorreu um erro de conexão: ${error.message}`, 'bot');
+    } finally {
+        sendButton.disabled = false;
+        userInput.focus(); // Coloca o foco de volta no input
     }
 }
 
 // --- Event Listeners ---
 sendButton.addEventListener('click', sendMessage);
 
-// Permite enviar com Enter
 userInput.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         sendMessage();
