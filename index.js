@@ -1,9 +1,7 @@
-// index.js (Backend - Exemplo com Express e ES Modules)
 import express from 'express';
-// Removido: import path from 'path'; // Não necessário se usar index.html
-// Removido: import { fileURLToPath } from 'url'; // Não necessário se usar index.html
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config(); // Carrega as variáveis do .env PRIMEIRO
 
@@ -13,11 +11,12 @@ dotenv.config(); // Carrega as variáveis do .env PRIMEIRO
 // ---
 
 const app = express();
-const port = 3000; // Ou outra porta
+const port = 3000;
 
 // --- Middlewares ---
-// 1. Servir arquivos estáticos (HTML, CSS, JS do Cliente) da pasta 'public'
-//    Isso automaticamente serve public/index.html quando você acessa '/'
+
+app.use(cors());
+
 app.use(express.static('public'));
 
 // 2. Parsear corpos de requisição JSON (essencial para req.body)

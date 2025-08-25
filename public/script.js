@@ -45,6 +45,8 @@ async function sendMessage() {
     userInput.value = ''; // Limpa o input
     showTypingIndicator(); // Mostra "Digitando..."
 
+    const apiUrl = 'https://chatbot-samuria.onrender.com';
+
     try {
         const response = await fetch('/chat', {
             method: 'POST',
@@ -52,7 +54,7 @@ async function sendMessage() {
                 'Content-Type': 'application/json',
             },
             // Envia a mensagem e o ID da sessão atual (se houver)
-            body: JSON.stringify({ message: message, sessionId: currentSessionId }),
+            body: JSON.stringify({ prompt: message }),
         });
 
         removeTypingIndicator(); // Remove "Digitando..."

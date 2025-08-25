@@ -13,9 +13,9 @@
   "dependencies": {
     "@google/genai": "^0.8.0",
     "@google/generative-ai": "^0.24.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0"
   },
-  "description": "\"Saudações, viajante. Eu sou Musashi Miyamoto — um bot forjado no espírito do lendário guerreiro samurai. Se procuras os grandes ensinamentos do Caminho da Estratégia, basta falar comigo. Com a lâmina da sabedoria e o escudo da honra, guiarei tua mente e teu espírito pelos caminhos dos Samurais, até que alcances a verdadeira maestria no Caminho da Espada\"",
-  "devDependencies": {}
+  "description": "\"Saudações, viajante. Eu sou Musashi Miyamoto — um bot forjado no espírito do lendário guerreiro samurai. Se procuras os grandes ensinamentos do Caminho da Estratégia, basta falar comigo. Com a lâmina da sabedoria e o escudo da honra, guiarei tua mente e teu espírito pelos caminhos dos Samurais, até que alcances a verdadeira maestria no Caminho da Espada\""
 }
