@@ -15,9 +15,9 @@ const port = 3000;
 
 // --- Middlewares ---
 
-app.use(cors());
-
 app.use(express.static('public'));
+
+app.use(cors());
 
 // 2. Parsear corpos de requisição JSON (essencial para req.body)
 app.use(express.json());
@@ -119,4 +119,5 @@ process.on('SIGINT', () => {
     console.log('\nRecebido SIGINT (Ctrl+C). Encerrando o servidor...');
     // Aqui você pode adicionar lógicas de limpeza se necessário (ex: fechar DB)
     process.exit(0);
+
 });
