@@ -84,10 +84,6 @@ function getCurrentTime(args) {
     };
 }
 
-const availableFunctions = {
-    getCurrentTime: getCurrentTime,
-};
-
 const chatSessions = {};
 
 const initialSystemHistory = [
@@ -102,8 +98,7 @@ const initialSystemHistory = [
             Não finja ser um humano real. Se não souber algo, admita com humildade.
             Se lhe perguntarem as horas ou a data, você DEVE usar a ferramenta 'getCurrentTime'.
             Após receber o resultado da ferramenta 'getCurrentTime' (que conterá a data e a hora), formule uma resposta completa e educada para o usuário, incorporando essa informação.
-            Por exemplo, se a ferramenta retornar "Data: 01/01/2024, Hora: 10:30", você poderia dizer: "Pequeno gafanhoto, os ventos do tempo sussurram que agora são 10:30 do dia 01/01/2024."
-            Não responda apenas com a informação da ferramenta, incorpore-a em uma frase completa no seu estilo.
+            Por exemplo, se a ferramenta retornar "Data: 01/01/2024, Hora: 10:30", você poderia dizer: "Pequeno gafanhoto, os ventos do tempo sussurram que agora são 10:30 do dia 01/01/2024." Não responda apenas com a informação da ferramenta, incorpore-a em uma frase completa no seu estilo.
         `  }],
     },
     {
@@ -120,7 +115,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/chat', async (req, res) => {
-    const userMessage = req.body.message;
+    const userMessage = req.body.prompt;
     let sessionId = req.body.sessionId;
 
     if (!userMessage) return res.status(400).json({ error: 'Mensagem não fornecida.' });
@@ -250,4 +245,118 @@ app.post('/chat', async (req, res) => {
 app.listen(port, () => {
     console.log(`🚀 Servidor rodando em http://localhost:${port}`);
     console.log(`Usando modelo: ${MODEL_NAME}`);
+});
+
+import mongoose from 'mongoose';
+import SessaoChat from './models/SessaoChat.js';
+
+// Conexão com MongoDB
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Samurai:jocaceme2025@cluster0.rydv1kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('MongoDB conectado com sucesso!'))
+    .catch(err => console.error('Erro de conexão com MongoDB:', err));
+
+
+
+
+// Endpoint para buscar históricos de chat
+app.get("/api/chat/historicos", async (req, res) => {
+    try {
+        const userId = req.query.userId; // Espera o userId como query parameter
+        if (!userId) {
+            return res.status(400).json({ error: "userId é obrigatório para buscar históricos." });
+        }
+        const historicos = await SessaoChat.find({ userId }).sort({ startTime: -1 }).limit(20);
+        res.json(historicos);
+    } catch (error) {
+        console.error("Erro ao buscar históricos:", error);
+        res.status(500).json({ error: "Erro interno ao buscar históricos de chat." });
+    }
+});
+
+// Endpoint para deletar um histórico de chat
+app.delete("/api/chat/historicos/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const resultado = await SessaoChat.findByIdAndDelete(id);
+        if (!resultado) {
+            return res.status(404).json({ error: "Histórico não encontrado." });
+        }
+        res.status(200).json({ message: "Histórico excluído com sucesso." });
+    } catch (error) {
+        console.error("Erro ao excluir histórico:", error);
+        res.status(500).json({ error: "Erro interno ao excluir histórico." });
+    }
+});
+
+// Endpoint para gerar um título para a conversa
+app.post("/api/chat/historicos/:id/gerar-titulo", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sessao = await SessaoChat.findById(id);
+        if (!sessao) {
+            return res.status(404).json({ error: "Histórico não encontrado." });
+        }
+
+        const historicoFormatado = sessao.messages.map(msg => `${msg.role}: ${msg.parts[0].text}`).join("\n");
+        const prompt = `Baseado nesta conversa, sugira um título curto e conciso de no máximo 5 palavras:\n\n${historicoFormatado}`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        res.json({ tituloSugerido: text });
+
+    } catch (error) {
+        console.error("Erro ao gerar título:", error);
+        res.status(500).json({ error: "Erro interno ao gerar título." });
+    }
+});
+
+// Endpoint para atualizar o título da conversa
+app.put("/api/chat/historicos/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { titulo } = req.body;
+
+        if (!titulo) {
+            return res.status(400).json({ error: "Título não fornecido." });
+        }
+
+        const sessaoAtualizada = await SessaoChat.findByIdAndUpdate(id, { titulo }, { new: true });
+
+        if (!sessaoAtualizada) {
+            return res.status(404).json({ error: "Histórico não encontrado." });
+        }
+
+        res.json(sessaoAtualizada);
+
+    } catch (error) {
+        console.error("Erro ao atualizar título:", error);
+        res.status(500).json({ error: "Erro interno ao atualizar título." });
+    }
+});
+
+// Lógica para salvar o histórico da conversa
+app.post("/api/chat/salvar-historico", async (req, res) => {
+    try {
+        const { sessionId, botId, messages, userId } = req.body;
+
+        const novaSessao = new SessaoChat({
+            sessionId,
+            botId,
+            startTime: new Date(),
+            messages,
+            loggedAt: new Date(),
+            userId // Adiciona o userId aqui
+        });
+
+        await novaSessao.save();
+        res.status(201).json({ message: "Histórico salvo com sucesso." });
+
+    } catch (error) {
+        console.error("Erro ao salvar histórico:", error);
+        res.status(500).json({ error: "Erro interno ao salvar histórico." });
+    }
 });
