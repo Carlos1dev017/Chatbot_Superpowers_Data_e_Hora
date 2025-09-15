@@ -3,6 +3,7 @@ dotenv.config();
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import axios from 'axios';
 import {
     GoogleGenerativeAI,
     HarmCategory,
@@ -46,15 +47,31 @@ const tools = [
         functionDeclarations: [
             {
                 name: "getCurrentTime",
-                description: "Obtém a data e hora atuais para informar ao usuário. Retorna um objeto contendo uma string com a hora atual.",
+                description: "Obtém a data e a hora atuais no fuso horário do Brasil (São Paulo).",
                 parameters: {
-                    type: "OBJECT",
+                    type: "object", // Corrigido para minúsculo
                     properties: {},
                 }
             },
+            {
+                name: "getWeather",
+                description: "Obtém o clima atual para uma cidade específica.",
+                parameters: {
+                    type: "object", // Corrigido para minúsculo
+                    properties: {
+                        location: {
+                            type: "string",
+                            description: "A cidade para a qual se deve obter o clima, por exemplo, 'São Paulo'."
+                        }
+                    },
+                    required: ["location"]
+                }
+            }
         ]
     }
 ];
+
+
 
 let genAI;
 let model;
@@ -75,14 +92,40 @@ try {
 function getCurrentTime(args) {
     console.log("⚙️ Executando ferramenta: getCurrentTime com args:", args);
     const now = new Date();
-    // Simplificando o retorno para o Gemini
     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
     const dateString = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    console.log(`⚙️ getCurrentTime executada, retornando: { "dateTimeInfo": "Data: ${dateString}, Hora: ${timeString}" }`);
-    return {
-        dateTimeInfo: `Data: ${dateString}, Hora: ${timeString}` // Um objeto simples com a informação.
-    };
+    const dateTimeInfo = `Data: ${dateString}, Hora: ${timeString}`;
+    console.log(`⚙️ getCurrentTime executada, retornando: { "dateTimeInfo": "${dateTimeInfo}" }`);
+    return { dateTimeInfo: dateTimeInfo };
 }
+
+
+async function getWeather(args) {
+    const { location } = args;
+    console.log(`⚙️ Executando ferramenta: getWeather para a cidade: ${location}`);
+    if (!location) {
+        return { error: "Nome da cidade não fornecido." };
+    }
+    try {
+        const apiKey = process.env.OPENWEATHER_API_KEY;
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric&lang=pt_br`;
+        
+        const response = await axios.get(url);
+        const data = response.data;
+        
+        const weatherInfo = `Clima em ${data.name}: ${data.weather[0].description}, temperatura de ${data.main.temp}°C (sensação de ${data.main.feels_like}°C).`;
+        console.log(`⚙️ getWeather executada, retornando: { "weatherInfo": "${weatherInfo}" }`);
+        return { weatherInfo: weatherInfo };
+    } catch (error) {
+        console.error(`[Ferramenta getWeather] Erro:`, error.response ? error.response.data : error.message);
+        return { error: "Não foi possível encontrar o clima para essa cidade." };
+    }
+}
+
+const availableFunctions = {
+    getCurrentTime: getCurrentTime,
+    getWeather: getWeather,
+};
 
 const chatSessions = {};
 
