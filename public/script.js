@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const SLOGAN_DO_BOT = "Seu companheiro inteligente para dúvidas e aprendizado!";
         const DESCRICAO_BOT_PARAGRAFO1 = "Musashi Miyamoto é um bot forjado no espírito do lendário guerreiro samurai. Se procuras os grandes ensinamentos do Caminho da Estratégia, basta falar comigo.";
         const DESCRICAO_BOT_PARAGRAFO2 = "Com a lâmina da sabedoria e o escudo da honra, guiarei tua mente e teu espírito pelos caminhos dos Samurais, até que alcances a verdadeira maestria no Caminho da Espada. Este bot utiliza a poderosa API Gemini para fornecer respostas inteligentes e relevantes.";
-        const AUTORES = ["Carlos Eduardo", "[Nome Aluno 2]", "[Nome Aluno 3]"];
+        const AUTORES = ["Carlos Eduardo"];
 
         document.getElementById("nome-bot-display").textContent = NOME_DO_BOT;
         document.getElementById("slogan-bot-display").textContent = SLOGAN_DO_BOT;
@@ -250,4 +250,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Inicia tudo!
     inicializarPagina();
+
 });
