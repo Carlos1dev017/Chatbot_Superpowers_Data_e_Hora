@@ -68,7 +68,7 @@ const tools = [{
 // --- Inicialização do Modelo Gemini ---
 let model;
 try {
-    const genAI = new GoogleGenerativeAI(API_KEY);
+     const genAI = new GoogleGenerativeAI(API_KEY, { apiVersion: 'v1' });
     model = genAI.getGenerativeModel({ model: MODEL_NAME, generationConfig, safetySettings });
     console.log(`Usando modelo Gemini: ${MODEL_NAME}`);
 } catch (error) {
@@ -112,16 +112,46 @@ const initialSystemHistory = [
 // --- Rotas de Autenticação ---
 app.use('/api/auth', authRoutes);
 
+
+import jwt from 'jsonwebtoken'; 
+
 // --- Rota Principal do Chat ---
-app.post('/api/chat', async (req, res) => {
+const getUserIdIfExists = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = { id: decoded.userId }; // Anexa o ID do usuário à requisição
+        } catch (error) {
+            req.user = null; // Token inválido, trata como anônimo
+        }
+    }
+    next(); // Continua para a rota do chat
+};
+
+app.post('/api/chat', getUserIdIfExists, async (req, res) => {
     const { prompt: userMessage, sessionId: reqSessionId } = req.body;
     let sessionId = reqSessionId;
 
-    console.log(`[${new Date().toISOString()}] Recebido prompt: "${userMessage}" para a sessão: ${sessionId || 'Nova'}`);
-
     try {
+        console.log(`[${new Date().toISOString()}] Recebido prompt: "${userMessage}" para a sessão: ${sessionId || 'Nova'}`);
+
         if (!userMessage || typeof userMessage !== 'string' || userMessage.trim() === '') {
             return res.status(400).json({ error: 'Nenhum prompt válido foi fornecido.' });
+        }
+
+        let systemInstruction;
+
+        // --- LÓGICA DE DECISÃO DA PERSONALIDADE ---
+        // Se o middleware encontrou um usuário logado...
+        if (req.user && req.user.id) {
+            const currentUser = await User.findById(req.user.id).select('customSystemInstruction');
+            // ...e esse usuário tem uma instrução customizada...
+            if (currentUser && currentUser.customSystemInstruction) {
+                systemInstruction = currentUser.customSystemInstruction;
+                console.log(`[Sessão: ${sessionId}] Usando personalidade customizada do usuário.`);
+            }
         }
 
         let history;
@@ -129,8 +159,17 @@ app.post('/api/chat', async (req, res) => {
             history = chatSessions[sessionId];
         } else {
             sessionId = crypto.randomUUID();
-            history = JSON.parse(JSON.stringify(initialSystemHistory));
+            // Monta o histórico inicial com a personalidade correta (customizada ou global)
+            if (systemInstruction) {
+                history = [
+                    { role: "user", parts: [{ text: systemInstruction }] },
+                    { role: "model", parts: [{ text: "Entendido. Agirei conforme solicitado." }] }
+                ];
+            } else {
+                history = JSON.parse(JSON.stringify(initialSystemHistory));
+            }
         }
+        
         history.push({ role: "user", parts: [{ text: userMessage.trim() }] });
 
         let finalBotReply = "";
@@ -139,7 +178,7 @@ app.post('/api/chat', async (req, res) => {
             turnCount++;
             const result = await model.generateContent({ contents: history, tools });
             if (!result.response.candidates || !result.response.candidates[0]) {
-                finalBotReply = "Não recebi uma resposta válida da IA. Por favor, tente novamente.";
+                finalBotReply = "Não recebi uma resposta válida da IA.";
                 break;
             }
             const candidate = result.response.candidates[0];
@@ -174,7 +213,7 @@ app.post('/api/chat', async (req, res) => {
         res.json({ reply: finalBotReply, sessionId });
 
     } catch (error) {
-        console.error(`[Sessão: ${sessionId}] ERRO GERAL na rota /chat:`, error.message || error);
+        console.error(`[Sessão: ${sessionId || 'indefinida'}] ERRO GERAL na rota /chat:`, error);
         res.status(500).json({ error: 'Uma perturbação inesperada ocorreu no caminho.' });
     }
 });
