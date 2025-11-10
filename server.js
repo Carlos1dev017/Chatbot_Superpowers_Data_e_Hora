@@ -25,7 +25,7 @@ if (!API_KEY) {
     console.error("🚨 ERRO FATAL: A variável de ambiente GEMINI_API_KEY não foi encontrada.");
     process.exit(1);
 }
-const MODEL_NAME = "gemini-1.5-flash-latest";
+const MODEL_NAME = "gemini-2.5-flash";
 const generationConfig = {
     temperature: 0.7,
     topK: 40,
