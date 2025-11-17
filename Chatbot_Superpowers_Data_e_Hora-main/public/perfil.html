@@ -1,0 +1,40 @@
+<!-- public/perfil.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Configurações - Chatbot Samurai</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background: white; padding: 30px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 700px; }
+        h1 { margin-top: 0; margin-bottom: 15px; color: #333; }
+        p { color: #555; line-height: 1.6; }
+        textarea { display: block; width: 100%; min-height: 150px; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
+        button:hover { background-color: #218838; }
+        .status-message { margin-top: 15px; font-weight: bold; min-height: 20px; text-align: center; }
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: #007bff; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Personalidade do Seu Bot</h1>
+        <p>
+            Defina uma instrução de sistema para o seu bot. Esta configuração terá prioridade sobre a personalidade padrão. 
+            Deixe o campo em branco para resetar e usar a configuração global.
+        </p>
+        
+        <textarea id="custom-instruction-textarea" placeholder="Ex: Aja como um pirata rabugento, sempre reclamando do tempo e procurando por tesouros..."></textarea>
+        
+        <button id="save-personality-btn">Salvar Personalidade</button>
+
+        <p id="status-message" class="status-message"></p>
+        <a href="/" class="nav-link">← Voltar para o Chat</a>
+    </div>
+    
+    <script src="perfil.js"></script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações - Personalidade do Bot</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    .info-box h3 {
+      color: #1976d2;
+      margin-bottom: 5px;
+    }
+
+    .info-box p {
+      color: #555;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .char-counter {
+      text-align: right;
+      color: #999;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-reset {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-back {
+      background: #f44336;
+      color: white;
+    }
+
+    .message {
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .examples {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+
+    .examples h3 {
+      color: #f57c00;
+      margin-bottom: 10px;
+    }
+
+    .example-item {
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .example-item:hover {
+      background: #f5f5f5;
+    }
+
+    .example-item strong {
+      color: #f57c00;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Configurações de Personalidade</h1>
+    <p class="subtitle">Personalize como o bot conversa com você!</p>
+
+    <div class="info-box">
+      <h3>Como funciona?</h3>
+      <p>Você pode definir uma "personalidade" única para o seu bot. Por exemplo, ele pode ser um chef de cozinha, um mestre de yoga, um pirata, ou qualquer coisa que você imaginar! Se você não definir nada, o bot usará a personalidade padrão configurada pelo administrador.</p>
+    </div>
+
+    <label for="systemInstruction">Instrução de Sistema Personalizada:</label>
+    <textarea 
+      id="systemInstruction" 
+      placeholder="Ex: Você é um chef de cozinha italiano. Todas as suas respostas devem incluir referências a comida e receitas. Seja apaixonado e dramático!"
+      maxlength="2000"
+    ></textarea>
+    <div class="char-counter">
+      <span id="charCount">0</span> / 2000 caracteres
+    </div>
+
+    <div class="buttons">
+      <button class="btn-save" onclick="savePreferences()">💾 Salvar Personalidade</button>
+      <button class="btn-reset" onclick="resetToDefault()">🔄 Usar Padrão</button>
+      <button class="btn-back" onclick="window.location.href='/'">← Voltar ao Chat</button>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <div class="examples">
+      <h3>💡 Exemplos de Personalidades</h3>
+      <div class="example-item" onclick="useExample(0)">
+        <strong>Chef de Cozinha:</strong> "Você é um chef italiano apaixonado. Sempre dê respostas relacionadas a comida e receitas."
+      </div>
+      <div class="example-item" onclick="useExample(1)">
+        <strong>Mestre de Yoga:</strong> "Você é um mestre de yoga. Suas respostas devem ser calmas, reflexivas e incluir metáforas sobre equilíbrio."
+      </div>
+      <div class="example-item" onclick="useExample(2)">
+        <strong>Pirata:</strong> "Você é um pirata dos sete mares. Fale como um pirata, usando gírias e expressões marítimas."
+      </div>
+      <div class="example-item" onclick="useExample(3)">
+        <strong>Cientista:</strong> "Você é um cientista entusiasta. Explique tudo com fatos, dados e curiosidades científicas."
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const textarea = document.getElementById('systemInstruction');
+    const charCount = document.getElementById('charCount');
+    const messageDiv = document.getElementById('message');
+
+    const examples = [
+      "Você é um chef italiano apaixonado. Todas as suas respostas devem incluir referências a comida e receitas. Seja dramático e use expressões italianas!",
+      "Você é um mestre de yoga e meditação. Suas respostas devem ser calmas, reflexivas e incluir metáforas sobre equilíbrio e harmonia interior.",
+      "Você é um pirata dos sete mares! Fale como um pirata clássico, usando gírias e expressões marítimas. Arrr!",
+      "Você é um cientista entusiasta e curioso. Explique tudo com fatos científicos, dados interessantes e curiosidades da ciência."
+    ];
+
+    // Atualizar contador de caracteres
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length;
+    });
+
+    // Carregar preferências ao abrir a página
+    window.addEventListener('load', loadPreferences);
+
+    async function loadPreferences() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const response = await fetch('/api/user/preferences', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.customSystemInstruction) {
+            textarea.value = data.customSystemInstruction;
+            charCount.textContent = data.customSystemInstruction.length;
+          }
+        } else if (response.status === 401) {
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Erro ao carregar preferências:', error);
+        showMessage('Erro ao carregar configurações', 'error');
+      }
+    }
+
+    async function savePreferences() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const instruction = textarea.value.trim();
+
+        const response = await fetch('/api/user/preferences', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            customSystemInstruction: instruction || null
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showMessage('✅ Personalidade salva com sucesso!', 'success');
+        } else {
+          showMessage('❌ ' + (data.error || 'Erro ao salvar'), 'error');
+        }
+      } catch (error) {
+        console.error('Erro ao salvar preferências:', error);
+        showMessage('❌ Erro ao salvar configurações', 'error');
+      }
+    }
+
+    async function resetToDefault() {
+      if (confirm('Tem certeza que deseja voltar a usar a personalidade padrão?')) {
+        textarea.value = '';
+        charCount.textContent = '0';
+        await savePreferences();
+      }
+    }
+
+    function useExample(index) {
+      textarea.value = examples[index];
+      charCount.textContent = examples[index].length;
+      textarea.focus();
+    }
+
+    function showMessage(text, type) {
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+      
+      setTimeout(() => {
+        messageDiv.style.display = 'none';
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Gemini</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Musashi Miyamoto (Chat-bot Gemini)</h1>
+        <div id="chat-box">
+            <div class="message bot-message">Olá! Como posso ajudar você Pequeno gafanhoto?</div>
+            <!-- Mensagens serão adicionadas aqui -->
+        </div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Digite sua mensagem...">
+            <button id="send-button">Enviar</button>
+        </div>
+    </div>
+
+    <aside id="info-bot-container">
+        <h2>🤖 <span id="nome-bot-display">[Nome do Seu Bot Aqui]</span> 🤖</h2>
+        <p id="slogan-bot-display"><em>[Slogan do Seu Bot Aqui]</em></p>
+        <div id="descricao-bot-display">
+            <p>[Parágrafo 1 da descrição detalhada...]</p>
+            <p>[Parágrafo 2 da descrição detalhada, mencionando a API Gemini, etc...]</p>
+        </div>
+        <div id="autoria-bot">
+            <p><strong>Desenvolvido por:</strong></p>
+            <ul>
+                <li>[Nome Aluno 1]</li>
+            </ul>
+        </div>
+    </aside>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+<button onclick="window.location.href='/configuracoes.html'" 
+        style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+  ⚙️ Configurar Personalidade
+</button>
+
+<section id="historico-container">
+    <h2>Histórico de Conversas</h2>
+    <ul id="lista-sessoes">
+        <!-- A lista de sessões será populada aqui via JS -->
+    </ul>
+    <div id="visualizacao-conversa-detalhada">
+        <!-- O conteúdo de uma conversa selecionada aparecerá aqui -->
+    </div>
+</section>
+
+
+
