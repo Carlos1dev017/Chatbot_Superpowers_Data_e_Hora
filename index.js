@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import jwt from 'jsonwebtoken';
 
 // --- Imports dos Modelos e Rotas ---
 import SessaoChat from './models/SessaoChat.js';
@@ -39,6 +40,22 @@ const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
 ];
+
+const protectRoute = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = { id: decoded.userId };
+            next();
+        } catch (error) {
+            return res.status(401).json({ message: 'Token inválido.' });
+        }
+    } else {
+        return res.status(401).json({ message: 'Acesso negado, token não fornecido.' });
+    }
+};
 
 // --- Definição das Ferramentas (Tools) ---
 const tools = [{
@@ -296,4 +313,5 @@ app.listen(port, () => {
     console.log(`Escutando na porta: ${port}`);
     console.log(`Acesse a aplicação em: http://localhost:${port}`);
     console.log(`Servindo arquivos estáticos da pasta: 'public'\n`);
+
 });
