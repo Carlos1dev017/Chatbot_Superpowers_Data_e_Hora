@@ -1,23 +1,18 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: [true, 'O nome de usuário é obrigatório.'],
-        unique: true,
-        trim: true,
-        lowercase: true
-    },
-    password: {
-        type: String,
-        required: [true, 'A senha é obrigatória.'],
-    },
-    customSystemInstruction: {
-        type: String,
-        trim: true
-    }
-}, { timestamps: true });
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  
+  // NOVO CAMPO para personalidade customizada
+  customSystemInstruction: { 
+    type: String, 
+    default: null,  // null = usar instrução global do admin
+    maxlength: 2000 // Limite de caracteres
+  },
+  
+  createdAt: { type: Date, default: Date.now }
+});
 
-const User = mongoose.model('User', userSchema);
-
-export default User;
+module.exports = mongoose.model('User', userSchema);
